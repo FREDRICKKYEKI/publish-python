@@ -11,6 +11,7 @@ Columns:
 import re
 import time
 import csv
+import sys
 
 
 def convert_to_csv():
@@ -22,18 +23,20 @@ def convert_to_csv():
     with open(txt_file, "r") as file:
         data = file.read()
 
-    chem_reg = r"Received packet (.*)"
+    chem_reg = r"\[\w+-\w+-\w+\s?\w+:\w+:\w+] ------ Received packet (.*)"
     rssi_reg = r" with RSSI (.*)"
-
+    time_reg = r"\[(\w+-\w+-\w+\s?\w+:\w+:\w+)\] ------ Received packet"
     chem_data = {i: data.replace("Chemical: ", "")
                  for i, data in enumerate(re.findall(chem_reg, data))
                  if len(data) > 2}
     rssi_data = dict(enumerate(re.findall(rssi_reg, data)))
 
+    time_data = dict(enumerate(re.findall(time_reg, data)))
+
     entries = []
 
     for i, data in chem_data.items():
-        time_ = time.ctime()
+        time_ = time_data.get(i)
         well_id = dict(enumerate(data.split(" , "))).get(0)
         if len(well_id) > 4:
             well_id = well_id.strip("'")
